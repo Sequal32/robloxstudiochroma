@@ -20,10 +20,12 @@ function Chroma.new(Title, Description, AuthorName, AuthorContact, DevicesSuppor
             contact = AuthorContact
         },
         device_supported = DevicesSupported,
-        category = "Application"
+        category = "application"
     })
     -- Initialize Variables
     NewChroma.SessionURL = nil
+
+    return NewChroma
 end
 
 function Chroma:ApiStatus()
@@ -42,10 +44,11 @@ function Chroma:Initialize()
     local Response = HttpService:RequestAsync({
         Url = BaseURL,
         Method = "POST",
-        Body = self.ApplicationInfo
+        Body = self.ApplicationInfo,
+        Headers = {["Content-Type"] = "application/json"}
     })
 
-    assert(Response.Success, "Initialization failed! Status code: " + Response.StatusCode)
+    assert(Response.Success, "Initialization failed!", Response.StatusCode, Response.StatusMessage)
 
     Data = HttpService:JSONDecode(Response.Body)
     self.SessionURL = Data.uri
