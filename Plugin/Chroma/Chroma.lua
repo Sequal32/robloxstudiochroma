@@ -35,6 +35,7 @@ function Chroma.new(Title, Description, AuthorName, AuthorContact, DevicesSuppor
     -- Initialize Variables
     NewChroma.SessionURL = nil
     NewChroma.Verbose = Verbose
+    NewChroma.SessionOpen = false
 
     return NewChroma
 end
@@ -69,6 +70,21 @@ function Chroma:Initialize()
     -- Get the sessionURL
     Data = HttpService:JSONDecode(Response.Body)
     self.SessionURL = Data.uri
+    self.SessionOpen = true
+
+    return true
+end
+
+function Chroma:Close()
+    -- Close the connection
+    local Response = HttpService:RequestAsync({
+        Url = self.SessionURL,
+        Method = "DELETE"
+    })
+
+    self.SessionOpen = false
+
+    self:VerboseLog("Connection closed.")
 end
 
 function Chroma:Heartbeat()
@@ -85,5 +101,15 @@ function Chroma:Heartbeat()
     self:VerboseLog("Heartbeat " + Data.ticks)
 end
 
+function Chroma:HeartbeatLoop()
+    spawn(function()
+
+        while self.SessionOpen do
+            self:Heartbeat()
+            wait(1)
+        end
+
+    end)
+end
 
 return Chroma
